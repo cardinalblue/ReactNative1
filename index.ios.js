@@ -11,6 +11,7 @@ var {
   Text,
   View,
 	PanResponder,
+	TouchableHighlight,
 } = React;
 
 var Boxes = [
@@ -27,6 +28,11 @@ var ReactNative1 = React.createClass({
 	},
 	componentWillMount: function() {
 		
+	},
+	_onPressAddButton: function() {
+		console.log('>>>>>>>>>> _onPressAddButton ');
+		Boxes.push({ color: 'red', x: 10, y: 10 });
+		this.setState({ boxes: Boxes });
 	},
   render: function() {
     return (
@@ -56,6 +62,10 @@ var ReactNative1 = React.createClass({
 						}) 
 					}
 				</View>
+				<TouchableHighlight style={ styles.addButton }
+														onPress={ this._onPressAddButton } >
+				  <Text style={ styles.addButtonText }>+</Text>
+				</TouchableHighlight>
       </View>
     );
   }
@@ -173,6 +183,14 @@ var styles = StyleSheet.create({
 		borderRadius: 3,
 		borderColor: '#333',
 	},
+	addButton: {
+	},
+	addButtonText: {
+    textAlign: 'center',
+    justifyContent: 'center',
+		fontSize: 25,
+		margin: 10,
+	}
 });
 
 // ---------------------------------------------------------------------------
