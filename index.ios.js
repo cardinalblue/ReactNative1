@@ -18,6 +18,7 @@ var {
 // "MODELS"
 
 var Boxes = [];
+
 var BoxesColors = [ 'gray', 'purple', 'orange', 'green', 'magenta', 'cyan', 'red', 'white' ];
 var BoxesId = 1;
 
@@ -37,7 +38,6 @@ var ReactNative1 = React.createClass({
 		return color;
 	},
 	_onPressAddButton: function() {
-		console.log('>>>>>>>>>> _onPressAddButton ');
 		Boxes.push({ 
 			color: this.getNextColor(), 
 			id: 'box' + BoxesId++,
@@ -110,10 +110,9 @@ var MovableBox = React.createClass({
         // The accumulated gesture distance since becoming responder is
         // gestureState.d{x,y}
 
-				console.log('>>>>>>> onPanResponderMove', this.props.box);
-				
-				this.props.box.x = this._origX + gestureState.dx;
-				this.props.box.y = this._origY + gestureState.dy;
+				var box = this.props.box;
+				box.x = this._origX + gestureState.dx;
+				box.y = this._origY + gestureState.dy;
 				this.forceUpdate();
 
       },
@@ -129,7 +128,6 @@ var MovableBox = React.createClass({
 		});
 	},
 	render: function() {
-		console.log('MovableBox');
 		var box = this.props.box;
 		return (
 		  <View style={ [ 
@@ -176,7 +174,7 @@ var styles = StyleSheet.create({
 	
 	// ---------------------------------------------
 	c2: {
-		flex: 1,
+		flex: 3,
 		// height: 200,
 		// width:  200,
 		backgroundColor: 'yellow'
