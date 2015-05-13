@@ -14,10 +14,12 @@ var {
 	TouchableHighlight,
 } = React;
 
-var Boxes = [
-	{ color: 'pink', x: 10, y: 10 },
-	{ color: 'blue', x: 30, y: 30 },
-];
+// ---------------------------------------------------------------------------
+// "MODELS"
+
+var Boxes = [];
+var BoxesColors = [ 'gray', 'purple', 'orange', 'green', 'magenta', 'cyan', 'red', 'white' ];
+var BoxesId = 1;
 
 // ---------------------------------------------------------------------------
 var ReactNative1 = React.createClass({
@@ -29,9 +31,19 @@ var ReactNative1 = React.createClass({
 	componentWillMount: function() {
 		
 	},
+	getNextColor: function() {
+		var color = BoxesColors.shift();
+		BoxesColors.push(color);
+		return color;
+	},
 	_onPressAddButton: function() {
 		console.log('>>>>>>>>>> _onPressAddButton ');
-		Boxes.push({ color: 'red', x: 10, y: 10 });
+		Boxes.push({ 
+			color: this.getNextColor(), 
+			id: 'box' + BoxesId++,
+			x: Math.random() * 100, 
+			y: Math.random() * 100 
+		});
 		this.setState({ boxes: Boxes });
 	},
   render: function() {
@@ -58,7 +70,7 @@ var ReactNative1 = React.createClass({
 				<View style={styles.c2}>
 					{ 
 						this.state.boxes.map(box => {
-							return (<MovableBox box={ box } />)
+							return (<MovableBox key={ box.id } box={ box } />)
 						}) 
 					}
 				</View>
