@@ -10,88 +10,117 @@ var {
   StyleSheet,
   Text,
   View,
-	PanResponder,
-	TouchableHighlight,
+  PanResponder,
+  TouchableHighlight,
+  Image,
+  CameraRoll,
 } = React;
 
 // ---------------------------------------------------------------------------
 // "MODELS"
 
-var Boxes = [];
+class Box {
+  static nextBox(color, width, height) {
+    var b = new this();
+    b.color = this.nextColor();
+    b.id    = this.nextId();
+    return b;
+  }
+  static nextColor() {
+    var color = this.colors.shift();
+    this.colors.push(color);
+    return color;
+  }
+  static nextId() {
+    return this.id++;
+  }
 
-var BoxesColors = [ 'gray', 'purple', 'orange', 'green', 'magenta', 'cyan', 'red', 'white' ];
-var BoxesId = 1;
+}
+Box.all    = [];
+Box.colors = [ 'gray', 'purple', 'orange', 'green', 'magenta', 'cyan', 'red', 'white' ];
+Box.id     = 1;
+
 
 // ---------------------------------------------------------------------------
-var ReactNative1 = React.createClass({
-	getInitialState: function() {
-		return {
-			boxes: Boxes,
-		};		
-	},
-	componentWillMount: function() {
-		
-	},
-	getNextColor: function() {
-		var color = BoxesColors.shift();
-		BoxesColors.push(color);
-		return color;
-	},
-	_onPressAddButton: function() {
-		Boxes.push({ 
-			color: this.getNextColor(), 
-			id: 'box' + BoxesId++,
-			x: Math.random() * 100, 
-			y: Math.random() * 100 
-		});
-		this.setState({ boxes: Boxes });
-	},
-  render: function() {
+// COMPONENTS
+
+class ReactNative1 extends React.Component {
+  constructor(props) {
+    this.state = { boxes: Box.all };
+  }
+  componentWillMount() {
+    
+  }
+  _onPressAddButton() {
+    console.log('>>>>>>>>>>', this);
+    this.getNewImage((uri, width, height) => {
+      console.log('>>>>>>>>>', uri, width, height);
+      var ratio = width / height;
+      var W = 100;
+      var newBox = Box.nextBox();
+      console.log('>>>>>>>>>>>>> newBox', newBox);
+      newBox.x         = Math.random() * 100;
+      newBox.y         = Math.random() * 100;
+      newBox.sourceURL = uri;
+      newBox.width     = W;
+      newBox.height    = W / ratio;
+
+      console.log('>>>>>>>>>>>', newBox);
+      Box.all.push(newBox);
+      this.setState({ boxes: Box.all });
+    });
+  }
+  getNewImage(callback) {
+    if (this._photos) {
+      var image = this.random(this._photos.edges).node.image;
+      callback(image.uri, image.width, image.height);
+    }
+    else {
+      CameraRoll.getPhotos({ first: 100 }, 
+        (photos) => {
+          console.log('photos: ', photos, photos.edges[0]);     
+          this._photos = photos;
+          this.getNewImage(callback);  // Recursive call 
+        },
+        (error) => {
+          console.log('error: ', error);
+        
+        }
+      );
+    }
+  }
+  random(array) {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+  render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-				<Text>
-					Hola Mundo!
-				</Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
-				<View style={styles.c1}>
-					<View style={styles.b1}><Text>1</Text></View>
-					<View style={styles.b2}><Text>2</Text></View>
-					<View style={styles.b3}><Text>3</Text></View>
-				</View>
-				<View style={styles.c2}>
-					{ 
-						this.state.boxes.map(box => {
-							return (<MovableBox key={ box.id } box={ box } />)
-						}) 
-					}
-				</View>
-				<TouchableHighlight style={ styles.addButton }
-														onPress={ this._onPressAddButton } >
-				  <Text style={ styles.addButtonText }>+</Text>
-				</TouchableHighlight>
+        <View style={styles.c2}>
+          { 
+            this.state.boxes.map(box => {
+              return (<MovableBox key={ box.id } box={ box } />)
+            }) 
+          }
+        </View>
+        <TouchableHighlight style={ styles.addButton }
+                            onPress={ this._onPressAddButton.bind(this) } >
+          <Text style={ styles.addButtonText }>+</Text>
+        </TouchableHighlight>
       </View>
     );
   }
-});
+};
+
 
 // ---------------------------------------------------------------------------
 var MovableBox = React.createClass({
-	componentWillMount: function() {
-		
-	  this._panResponder = PanResponder.create({
+  componentWillMount: function() {
+    
+    this._panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: 			 (evt, gestureState) => true,
+      onStartShouldSetPanResponder:        (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: 				 (evt, gestureState) => true,
+      onMoveShouldSetPanResponder:         (evt, gestureState) => true,
       onMoveShouldSetPanResponderCapture:  (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
@@ -99,10 +128,10 @@ var MovableBox = React.createClass({
         // what is happening!
 
         // gestureState.{x,y}0 will be set to zero now
-				
-				this._origX  = this.props.box.x;
-				this._origY  = this.props.box.y;
-				
+        
+        this._origX  = this.props.box.x;
+        this._origY  = this.props.box.y;
+        
       },
       onPanResponderMove: (evt, gestureState) => {
         // The most recent move distance is gestureState.move{X,Y}
@@ -110,10 +139,10 @@ var MovableBox = React.createClass({
         // The accumulated gesture distance since becoming responder is
         // gestureState.d{x,y}
 
-				var box = this.props.box;
-				box.x = this._origX + gestureState.dx;
-				box.y = this._origY + gestureState.dy;
-				this.forceUpdate();
+        var box = this.props.box;
+        box.x = this._origX + gestureState.dx;
+        box.y = this._origY + gestureState.dy;
+        this.forceUpdate();
 
       },
       onPanResponderTerminationRequest: (evt, gestureState) => true,
@@ -124,24 +153,40 @@ var MovableBox = React.createClass({
       onPanResponderTerminate: (evt, gestureState) => {
         // Another component has become the responder, so this gesture
         // should be cancelled
-      },		
-		});
-	},
-	render: function() {
-		var box = this.props.box;
-		return (
-		  <View style={ [ 
-						styles.box, 
-						{ 
-							backgroundColor: box.color,
-							left: 					 box.x,	
-							top: 						 box.y,
-						} 
-						] } 
-						{...this._panResponder.panHandlers} />	
-		);
-	}
-	
+      },    
+    });
+  },
+  onLoadingFinish: function(a, b, c) {
+    console.log('>>>>>>>>>>>>>>>>>> onLoadingFinish event', a, b, c);
+    var image = this.refs.image;
+    if (image) {
+      console.log('>>>>>>>>>>>>>>>>>> onLoadingFinish image', image, image.props, image.image);
+    }
+  },
+  render: function() {
+    var box = this.props.box;
+    return (
+      <View style={ [ 
+            styles.box, 
+            { 
+              backgroundColor: box.color,
+              left:            box.x, 
+              top:             box.y,
+            } 
+            ] } 
+            {...this._panResponder.panHandlers} >
+        <Image ref='image' 
+               source={ { uri: box.sourceURL } }
+               style={ { 
+                 width: box.width, 
+                 height: box.height, 
+                 resizeMode: 'cover' 
+               }}
+               onLoadingFinish={ this.onLoadingFinish() }/>
+      </View> 
+    );
+  }
+  
 });
 
 // ---------------------------------------------------------------------------
@@ -151,56 +196,31 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#ccf',
   },
-  welcome: {
-    fontSize: 20,
-    // textAlign: 'center',
-    // margin: 10,
+  // ---------------------------------------------
+  c2: {
+    flex: 3,
+    backgroundColor: 'yellow'
   },
-  instructions: {
-    // textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
+  box: {
+    position: 'absolute',
+
+    shadowColor: 'black',
+    shadowRadius: 2,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+
+    borderWidth: 1,
+    borderRadius: 3,
+    borderColor: '#333',
   },
-	
-	// ---------------------------------------------
-	c1: {
-		flex: 1,
-		flexDirection: 'row',
-		backgroundColor: 'purple',
-	},
-	b1: { flex: 1, backgroundColor: 'red', 	 margin: 10, },
-	b2: { flex: 1, backgroundColor: 'green', margin: 10, },
-	b3: { flex: 1, backgroundColor: 'blue',  margin: 10, },
-	
-	// ---------------------------------------------
-	c2: {
-		flex: 3,
-		// height: 200,
-		// width:  200,
-		backgroundColor: 'yellow'
-	},
-	box: {
-		position: 'absolute',
-		height: 40,
-		width: 40,
-
-		shadowColor: 'black',
-		shadowRadius: 2,
-		shadowOffset: { width: 3, height: 3 },
-		shadowOpacity: 0.5,
-
-		borderWidth: 2,
-		borderRadius: 3,
-		borderColor: '#333',
-	},
-	addButton: {
-	},
-	addButtonText: {
+  addButton: {
+  },
+  addButtonText: {
     textAlign: 'center',
     justifyContent: 'center',
-		fontSize: 25,
-		margin: 10,
-	}
+    fontSize: 25,
+    margin: 10,
+  }
 });
 
 // ---------------------------------------------------------------------------
