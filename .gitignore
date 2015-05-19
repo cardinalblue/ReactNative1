@@ -1,16 +1,6 @@
-# Most part of this file is created by https://www.gitignore.io
+###########################################################
+# Copied from original .gitignore
 
-### Node ###
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-###################
 # OSX
 #
 .DS_Store
@@ -39,4 +29,16 @@ project.xcworkspace
 #
 node_modules/
 npm-debug.log
+
+###########################################################
+
+### Node ###
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
 
