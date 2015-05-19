@@ -94,7 +94,7 @@ class ReactNative1 extends React.Component {
   }
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} >
         <View style={styles.c2}>
           { 
             this.state.boxes.map(box => {
@@ -103,7 +103,7 @@ class ReactNative1 extends React.Component {
           }
         </View>
         <TouchableHighlight style={ styles.addButton }
-                            onPress={ this._onPressAddButton.bind(this) } >
+                            onPress={ () => this._onPressAddButton() } >
           <Text style={ styles.addButtonText }>+</Text>
         </TouchableHighlight>
       </View>
